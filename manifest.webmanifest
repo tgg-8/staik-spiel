@@ -1,0 +1,19 @@
+{
+  "name": "Statik-Hof – Lernen für die Statik-Klausur",
+  "short_name": "Statik-Hof",
+  "description": "Lern-App für die Statik-Klausur: lernen, ernten, einen Hof aufbauen. Funktioniert offline.",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4eee2",
+  "theme_color": "#f4eee2",
+  "categories": ["education"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

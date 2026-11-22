@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <!-- Kein Zoomen per Doppeltipp/Pinch: die App ist für das iPad gestaltet -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Statik-Hof</title>
+  <meta name="description" content="Lern-App für die Statik-Klausur (Physiotherapie, 1. Ausbildungsjahr) – lernen und dabei einen Hof aufbauen. Funktioniert offline.">
+  <meta name="theme-color" content="#f4eee2">
+  <meta name="color-scheme" content="light dark">
+  <!-- iPad / iOS: als App vom Home-Bildschirm -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Statik-Hof">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app" aria-live="off">
+    <p style="text-align:center;margin-top:40vh;font-family:Georgia,serif">Der Hof wird vorbereitet …</p>
+  </div>
+  <noscript><p style="text-align:center;margin-top:30vh">Bitte JavaScript aktivieren – sonst kann der Statik-Hof nicht starten.</p></noscript>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

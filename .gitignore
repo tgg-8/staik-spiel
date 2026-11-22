@@ -1,0 +1,5 @@
+# Original-Unterlagen (Scans) nicht ins Repository/auf die Webseite:
+# groß und urheberrechtlich/privat. Die App braucht sie nicht.
+material/*.pdf
+node_modules/
+.DS_Store
