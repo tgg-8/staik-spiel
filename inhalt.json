@@ -2,7 +2,7 @@
   "meta": {
     "titel": "Statik-Hof",
     "untertitel": "Lernen für die Statik-Klausur – Physiotherapie, 1. Ausbildungsjahr",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "stand": "2026-11-22",
     "hinweis": "Alle Inhalte stammen aus den Unterrichtsunterlagen im Ordner material/. Jede Aufgabe nennt ihre Quelle (Datei und PDF-Seite)."
   },
@@ -78,6 +78,8 @@
     "klausurFragen": 20,
     "xpProRichtig": 10,
     "muenzenProRichtig": 5,
+    "muenzenProKorn": 5,
+    "xpProKorn": 2,
     "auftragFaktor": 2,
     "levelXp": [
       0,

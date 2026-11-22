@@ -50,7 +50,15 @@ Im Projektordner ein Terminal öffnen und `python3 -m http.server 8080` starten,
 - Der Spielstand wird **auf dem iPad gespeichert**, und zwar getrennt für Safari und für die installierte App. Lerne deshalb immer in der installierten App.
 - **Sicherung:** Zahnrad → *Exportieren*. Die Datei z. B. in „Dateien“ oder iCloud Drive sichern. Wiederherstellen geht über *Importieren*.
 - Wenn du die App vom Home-Bildschirm löschst, ist der Spielstand weg. Vorher also exportieren!
-- Töne, Animationen, Hell/Dunkel, Aufgaben pro Ernte und die Klausurdauer stellst du über das Zahnrad ein.
+- Töne, Tierlaute, Animationen, Tiere, Tageszeit-Himmel, Hell/Dunkel, Aufgaben pro Lernrunde und die Klausurdauer stellst du über das Zahnrad ein. Dort findest du auch jederzeit die **Spielanleitung**.
+- Auf dem iPad sind Töne erst nach der ersten Berührung möglich (Vorgabe von Safari). Bleibt es still: Stummschalter/Lautstärke prüfen.
+
+### So spielt man
+
+- **Lernrunde:** Gebäude antippen → 5–8 Aufgaben aus diesem Thema.
+- **Korn wächst:** Jede richtige Antwort lässt das Beet neben dem Gebäude wachsen (Saat → Spross → Halm → reif). Falsche Antworten kosten nichts.
+- **Ernten:** Reifes Korn hat ein goldenes Schild. Beet antippen → Münzen und XP. Mit Münzen baust du neue Gebäude und kaufst Deko.
+- **Leuchtende Beete** zeigen fällige Wiederholungen.
 
 ---
 

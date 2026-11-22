@@ -4,7 +4,7 @@
 // neue Versionen, wenn eine Verbindung besteht („stale-while-revalidate“).
 // Wer Dateien ändert, sollte VERSION hochzählen – dann wird der Speicher erneuert.
 
-const VERSION = 'statikhof-v1.0.0';
+const VERSION = 'statikhof-v2.0.0';
 const DATEIEN = [
   './',
   'index.html',
@@ -16,8 +16,10 @@ const DATEIEN = [
   'js/aufgaben-ui.js',
   'js/datum.js',
   'js/farm.js',
+  'js/feld.js',
   'js/formel.js',
   'js/klang.js',
+  'js/leben.js',
   'js/leitner.js',
   'js/pruefen.js',
   'js/skizzen.js',

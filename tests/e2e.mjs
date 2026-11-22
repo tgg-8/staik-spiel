@@ -85,23 +85,67 @@ async function main() {
   await p.waitForSelector('[data-ernten]');
   ok('Willkommen → Kornfeld-Dialog');
 
-  console.log('Ernte im Kornfeld: alles richtig');
+  console.log('Lernrunde im Kornfeld: alles richtig → Korn wächst');
   await p.locator('[data-ernten]').tap();
+  const stufen = [];
   for (let i = 0; i < 6; i++) {
     await beantworte(p, true);
     await p.locator('[data-pruefen]').tap();
     await p.waitForSelector('.rueckmeldung.gut');
+    stufen.push(await p.evaluate(() => window.__statikhof.S.felder.grundlagen.pflanzen.join('')));
+    assert.equal(await p.locator('.beet-streifen .pflanze.waechst').count() > 0, true, 'Wachstum im Beet-Streifen sichtbar');
     await p.locator('.lernen .aktionen .knopf').tap();
   }
+  assert.deepEqual(stufen, ['100000', '210000', '321000', '432100', '443210', '444321']);
+  ok('Jede richtige Antwort: Saat → Spross → Halm → reif (Beet-Streifen animiert)');
   await p.waitForSelector('.ergebnis');
   const nachErnte = await p.evaluate(() => window.__statikhof.S);
-  assert.equal(nachErnte.xp, 60); assert.equal(nachErnte.muenzen, 30);
+  assert.equal(nachErnte.xp, 60); assert.equal(nachErnte.muenzen, 0);
   assert.equal(Object.values(nachErnte.karten).filter((k) => k.box === 2).length, 6);
   assert.equal(nachErnte.serie.tage, 1);
-  ok('6/6 richtig → 60 XP, 30 Münzen, 6 Karten in Fach 2 (morgen fällig), Tagesserie 1');
+  assert.match(await p.textContent('.ergebnis'), /3 Korn ist reif/);
+  ok('6/6 richtig → 60 XP (Münzen erst beim Ernten), 6 Karten in Fach 2, Tagesserie 1, 3 Korn reif');
+
+  console.log('Korn ernten auf dem Hof');
+  await p.locator('[data-zurueck]').tap();
+  await p.waitForSelector('.beet.hat-reif[data-feld="grundlagen"]');
+  assert.equal(await p.textContent('.korn-zahl'), '0');
+  await p.locator('.beet.hat-reif[data-feld="grundlagen"] .ernte-hinweis').tap({ force: true });
+  await p.waitForSelector('.flieger');
+  ok('Antippen startet die Ernte-Animation (fliegende Körner)');
+  await p.waitForFunction(() => !document.querySelector('.beet.hat-reif') && document.querySelector('.korn-zahl')?.textContent === '3', null, { timeout: 5000 });
+  const nachKorn = await p.evaluate(() => window.__statikhof.S);
+  assert.equal(nachKorn.korn, 3); assert.equal(nachKorn.muenzen, 15); assert.equal(nachKorn.xp, 66);
+  assert.equal(nachKorn.felder.grundlagen.pflanzen.join(''), '000321');
+  assert.equal(await p.textContent('.muenz-zahl'), '15');
+  ok('3 Korn geerntet → Zähler 3 Korn, +15 Münzen, +6 XP; reife Plätze sind wieder frei');
+
+  console.log('Tiere leben');
+  const t1 = await p.evaluate(() => window.__statikhof.tierPositionen());
+  assert.ok(t1.some((t) => t.art === 'pferd') && t1.some((t) => t.art === 'huhn') && t1.some((t) => t.art === 'kueken'));
+  assert.equal(await p.evaluate(() => window.__statikhof.laeuft()), true);
+  await p.waitForTimeout(2500);
+  const t2 = await p.evaluate(() => window.__statikhof.tierPositionen());
+  assert.ok(t2.some((t, i) => Math.hypot(t.x - t1[i].x, t.y - t1[i].y) > 1), 'mindestens ein Tier hat sich bewegt');
+  // Tiere überdecken keine Gebäude und keine Bedienelemente
+  const ueberlappung = await p.evaluate(() => {
+    const boxen = [...document.querySelectorAll('.geb .geb-bild, .beet, .leiste, .kopf > *')].map((e) => e.getBoundingClientRect());
+    const tiere = [...document.querySelectorAll('.tier-pferd, .tier-huhn, .tier-kueken')].map((e) => e.getBoundingClientRect());
+    const schnitt = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    return tiere.map((t) => Math.max(0, ...boxen.map((b) => schnitt(t, b) / (t.width * t.height)))).reduce((m, x) => Math.max(m, x), 0);
+  });
+  assert.ok(ueberlappung < 0.25, `Tiere überdecken Gebäude/Bedienung zu stark (${ueberlappung.toFixed(2)})`);
+  await p.locator('.tier-huhn').first().tap({ force: true });
+  ok('Pferde, Hühner und Küken bewegen sich, bleiben frei von Gebäuden und Knöpfen, Huhn reagiert auf Antippen');
+  await p.locator('[data-aktion="einstellungen"]').tap();
+  await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => window.__statikhof.laeuft()), false);
+  await p.locator('.blatt [data-schliessen]').first().tap();
+  await p.waitForTimeout(200);
+  assert.equal(await p.evaluate(() => window.__statikhof.laeuft()), true);
+  ok('Tier-Animation pausiert bei offenem Dialog und läuft danach weiter');
 
   console.log('Fehler führen zu Erklärung und Wiederholung');
-  await p.locator('[data-zurueck]').tap();
   await p.evaluate(() => window.__statikhof.testSitzung(['g01', 'g04']));
   let erste = await beantworte(p, false);
   await p.locator('[data-pruefen]').tap();
@@ -169,7 +213,8 @@ async function main() {
   await p.waitForFunction(() => window.__statikhof && window.__statikhof.S);
   assert.equal(await p.evaluate(() => JSON.stringify(window.__statikhof.S.karten)), vorher);
   assert.equal(await p.locator('[data-los]').count(), 0);
-  ok('Karten, XP und Begrüßungsstatus nach Reload unverändert');
+  assert.equal(await p.evaluate(() => window.__statikhof.S.korn), 3);
+  ok('Karten, XP, Korn, Beete und Begrüßungsstatus nach Reload unverändert');
 
   console.log('Export, Zurücksetzen, Import');
   await p.locator('[data-aktion="einstellungen"]').tap();
@@ -214,10 +259,10 @@ async function main() {
   await ctx.setOffline(true);
   await p.reload();
   await p.waitForSelector('.hof-buehne svg');
-  await p.locator('.geb[data-block="grundlagen"]').tap();
+  await p.locator('.geb[data-block="grundlagen"] .geb-schild').tap();
   await p.locator('[data-ernten]').tap();
   await p.waitForSelector('.lernen .frage');
-  ok('Ohne Netz: App startet aus dem Service-Worker-Speicher, Ernte funktioniert');
+  ok('Ohne Netz: App startet aus dem Service-Worker-Speicher, Lernrunde funktioniert');
   await ctx.setOffline(false);
 
   console.log('Hochformat: kein seitliches Scrollen');
@@ -228,6 +273,20 @@ async function main() {
   const breite = await ph.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]);
   assert.ok(breite[0] <= breite[1], `Seite breiter als Bildschirm: ${breite}`);
   ok('Hochformat passt in die Breite');
+
+  console.log('Alter Spielstand (Version 1) wird übernommen');
+  const alt = await browser.newContext({ ...devices['iPad Pro 11 landscape'] });
+  const pa = await alt.newPage();
+  pa.on('pageerror', (e) => fehler.push('v1: ' + e.message));
+  await pa.addInitScript(() => localStorage.setItem('statikhof.spielstand.v1', JSON.stringify({ version: 1, begruesst: true, xp: 300, muenzen: 77, karten: { g01: { box: 3, faellig: '2020-01-01', richtig: 2, falsch: 0 } }, gebaut: { konstitution: true }, deko: { blumen: true }, auftraege: [], einstellungen: { ton: false, design: 'auto', animationen: true, ernteAufgaben: 6, klausurMinuten: 30, klausurFragen: 20 }, statistik: { antworten: 5, richtig: 4, ernten: 1, auftraege: 0, klausuren: [] } })));
+  await pa.goto(APP_URL);
+  await pa.waitForSelector('.hof-svg');
+  const mig = await pa.evaluate(() => window.__statikhof.S);
+  assert.equal(mig.version, 2); assert.equal(mig.xp, 300); assert.equal(mig.muenzen, 77); assert.equal(mig.korn, 0);
+  assert.equal(mig.karten.g01.box, 3); assert.equal(mig.deko.blumen, true); assert.equal(mig.einstellungen.ton, false); assert.equal(mig.einstellungen.tiere, true);
+  assert.equal(await pa.locator('.geb.produziert[data-block="konstitution"], .geb.ruht[data-block="konstitution"]').count(), 1);
+  ok('Version-1-Spielstand: XP, Münzen, Karten, Gebäude, Deko und Einstellungen bleiben, Beete kommen leer dazu');
+  await alt.close();
 
   assert.deepEqual(fehler, [], 'Konsolenfehler: ' + fehler.join(' | '));
   ok('Keine JavaScript-Fehler in der Konsole');

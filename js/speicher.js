@@ -3,7 +3,7 @@
 // ist klein (wenige Kilobyte), dafür reicht localStorage dicke.
 
 const SCHLUESSEL = 'statikhof.spielstand.v1';
-const VERSION = 1;
+const VERSION = 2; // 2 = Kornfelder je Gebäude, Kornspeicher, Hof-Einstellungen
 
 /** Leerer Spielstand mit Standardeinstellungen. */
 export function neuerSpielstand(cfg = {}) {
@@ -18,7 +18,9 @@ export function neuerSpielstand(cfg = {}) {
     deko: {},            // Deko-ID → true
     serie: null,         // Tagesserie
     auftraege: [],       // offene Aufträge
-    statistik: { ernten: 0, auftraege: 0, antworten: 0, richtig: 0, klausuren: [] },
+    felder: {},          // Block-ID → { pflanzen: [0..4]×6, geerntet }
+    korn: 0,             // Kornspeicher: insgesamt geerntetes Korn
+    statistik: { ernten: 0, auftraege: 0, antworten: 0, richtig: 0, klausuren: [], kornGeerntet: 0 },
     begruesst: false,
     einstellungen: {
       ton: true,
@@ -27,20 +29,31 @@ export function neuerSpielstand(cfg = {}) {
       ernteAufgaben: cfg.ernteAufgaben ?? 6,
       klausurMinuten: cfg.klausurMinuten ?? 30,
       klausurFragen: cfg.klausurFragen ?? 20,
+      tiere: true,         // Tiere und Leben auf dem Hof
+      tierlaute: true,     // Geräusche der Tiere
+      tageszeit: true,     // Himmel passend zur Uhrzeit
     },
   };
 }
 
-/** Ergänzt fehlende Felder (z. B. nach einem Update der App). */
+/** Ergänzt fehlende Felder (z. B. nach einem Update der App) und migriert alte Versionen. */
 export function vervollstaendige(stand, cfg) {
   const leer = neuerSpielstand(cfg);
   const s = { ...leer, ...stand };
+  // Migration 1 → 2: Kornfelder und Kornspeicher gab es noch nicht. Alles andere
+  // (Karten, XP, Münzen, Gebäude, Deko, Serie) bleibt unverändert erhalten.
+  if (!stand.version || stand.version < 2) {
+    s.felder = {};
+    s.korn = 0;
+  }
+  s.version = VERSION;
   s.einstellungen = { ...leer.einstellungen, ...(stand.einstellungen || {}) };
   s.statistik = { ...leer.statistik, ...(stand.statistik || {}) };
-  for (const k of ['karten', 'gebaut', 'deko']) if (typeof s[k] !== 'object' || s[k] === null || Array.isArray(s[k])) s[k] = {};
+  for (const k of ['karten', 'gebaut', 'deko', 'felder']) if (typeof s[k] !== 'object' || s[k] === null || Array.isArray(s[k])) s[k] = {};
   if (!Array.isArray(s.auftraege)) s.auftraege = [];
   s.xp = Number.isFinite(s.xp) ? s.xp : 0;
   s.muenzen = Number.isFinite(s.muenzen) ? s.muenzen : 0;
+  s.korn = Number.isFinite(s.korn) ? s.korn : 0;
   return s;
 }
 
